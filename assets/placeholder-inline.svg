@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="占位截图">
+  <!-- Placeholder for .shot-inline (inline screenshot in a content slide).
+       Replace with a real screenshot or recording; keep roughly 16:9. -->
+  <rect width="800" height="450" fill="#ffffff"/>
+  <rect x="1" y="1" width="798" height="448" rx="10" fill="none" stroke="rgba(23,63,87,0.16)" stroke-width="2"/>
+
+  <!-- browser chrome -->
+  <path d="M1 11a10 10 0 0 1 10-10h778a10 10 0 0 1 10 10v28H1z" fill="#f3f6f8"/>
+  <line x1="1" y1="39" x2="799" y2="39" stroke="rgba(23,63,87,0.12)" stroke-width="2"/>
+  <circle cx="26" cy="20" r="5" fill="#f03c2e"/>
+  <circle cx="44" cy="20" r="5" fill="#a34865"/>
+  <circle cx="62" cy="20" r="5" fill="#173f57"/>
+  <rect x="90" y="12" width="300" height="16" rx="8" fill="#ffffff" stroke="rgba(23,63,87,0.14)"/>
+  <rect x="102" y="17" width="180" height="6" rx="3" fill="#5b7080" opacity="0.45"/>
+
+  <!-- page skeleton: heading + two text lines -->
+  <rect x="48" y="76" width="300" height="22" rx="6" fill="#173f57"/>
+  <rect x="48" y="122" width="420" height="10" rx="5" fill="#5b7080" opacity="0.5"/>
+  <rect x="48" y="142" width="360" height="10" rx="5" fill="#5b7080" opacity="0.35"/>
+
+  <!-- bar chart -->
+  <g>
+    <rect x="48" y="330" width="44" height="60" fill="#f03c2e"/>
+    <rect x="116" y="290" width="44" height="100" fill="#a34865"/>
+    <rect x="184" y="252" width="44" height="138" fill="#173f57"/>
+    <rect x="252" y="306" width="44" height="84" fill="#5f8ca4"/>
+    <rect x="320" y="222" width="44" height="168" fill="#f03c2e" opacity="0.85"/>
+    <line x1="40" y1="390" x2="752" y2="390" stroke="rgba(23,63,87,0.2)" stroke-width="2"/>
+  </g>
+
+  <!-- side card -->
+  <rect x="440" y="76" width="312" height="180" rx="12" fill="#ffffff" stroke="rgba(23,63,87,0.16)"/>
+  <rect x="464" y="100" width="140" height="14" rx="4" fill="#173f57"/>
+  <rect x="464" y="130" width="240" height="9" rx="4" fill="#5b7080" opacity="0.4"/>
+  <rect x="464" y="150" width="200" height="9" rx="4" fill="#5b7080" opacity="0.3"/>
+  <rect x="464" y="184" width="96" height="34" rx="17" fill="#f03c2e"/>
+  <rect x="440" y="286" width="312" height="104" rx="12" fill="rgba(23,63,87,0.05)"/>
+  <rect x="464" y="310" width="180" height="12" rx="4" fill="#5f8ca4"/>
+  <rect x="464" y="336" width="230" height="9" rx="4" fill="#5b7080" opacity="0.35"/>
+</svg>

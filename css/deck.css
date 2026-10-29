@@ -1,0 +1,665 @@
+/*
+  Deck engine — layout, scaling, navigation chrome and overview.
+  Content styling (typography, colours, code theme) lives in custom.css.
+
+  The stage is a fixed 1280x720 box that is scaled to fit the viewport, so a
+  slide looks identical on a laptop and on a projector. --slide-w / --slide-h
+  must stay in sync with the W / H constants in js/deck.js.
+*/
+
+:root {
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --stage-bg: #091a25;
+  --chrome-ink: rgba(255, 255, 255, 0.5);
+  --chrome-rule: rgba(255, 255, 255, 0.1);
+  /* Follows --accent from custom.css when present; standalone fallback below. */
+  --chrome-accent: var(--accent, #f03c2e);
+}
+
+body.deck-page {
+  margin: 0;
+  overflow: hidden;
+  background: var(--stage-bg);
+  -webkit-font-smoothing: antialiased;
+  /*
+    The slides are a 1280px-wide block inside a much narrower phone viewport,
+    which is exactly what makes iOS Safari inflate text on its own. That would
+    reflow a layout whose whole point is that it does not reflow.
+  */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.deck {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(240, 60, 46, 0.12), transparent 32%),
+    radial-gradient(circle at 80% 84%, rgba(23, 63, 87, 0.5), transparent 38%),
+    var(--stage-bg);
+}
+
+/* Hide the slides until deck.js has classified and positioned them. */
+.deck:not(.is-ready) .deck-slides {
+  visibility: hidden;
+}
+
+.deck-slides {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  margin-left: calc(var(--slide-w) / -2);
+  margin-top: calc(var(--slide-h) / -2);
+  transform-origin: 50% 50%;
+  transform: scale(var(--scale, 1));
+}
+
+/* Only on/off for overview, so resizing does not animate.
+   280ms: overview wheel steps arrive every ~160ms, and retargeting a
+   400ms ease mid-flight made the pan feel like it was floating behind
+   the input. */
+.deck-slides.is-animating {
+  transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* A <section> that contains further <section>s: a vertical stack. */
+.deck-stack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.deck-slide {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 72px 78px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 280ms ease, filter 280ms ease;
+}
+
+.deck-slide.is-present {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Step-by-step reveals: keep the space, hide the ink. */
+.fragment {
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.fragment.is-visible {
+  opacity: 1;
+}
+
+/*
+  Stepped code lines (pre[data-lines]): deck.js wraps each step's lines in a
+  .fragment span. Blanket-hiding lines would gut the code block of the
+  context the audience needs, so inside pre they dim instead of vanish —
+  the shape stays and the unlit lines read as "still to come".
+*/
+pre .fragment {
+  opacity: 0.35;
+}
+
+/*
+  Speaker notes live inside each slide as <aside class="notes">; the deck
+  itself never shows them, only the speaker bar reads them out.
+*/
+.deck-slide .notes {
+  display: none;
+}
+
+/* ---------- overview ---------------------------------------------------- */
+
+.deck.is-overview .deck-slides {
+  transform: scale(var(--overview-scale, 0.3))
+    translate(var(--pan-x, 0px), var(--pan-y, 0px));
+}
+
+.deck.is-overview .deck-slide {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  cursor: pointer;
+  background: #f6f7f8;
+  outline: 3px solid var(--chrome-rule);
+  transform: translate(var(--ox, 0px), var(--oy, 0px));
+}
+
+.deck.is-overview .deck-slide.is-present {
+  outline: 10px solid var(--chrome-accent);
+}
+
+.deck.is-overview .fragment {
+  opacity: 1;
+}
+
+/* ---------- chrome ------------------------------------------------------ */
+
+/*
+  The chrome shares the stage box and its scale, so the progress bar keeps the
+  same relation to the slide's bottom padding at every aspect ratio. Anchored to
+  the viewport instead, it cut through slide content on anything but 16:9.
+*/
+.deck-chrome-layer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  margin-left: calc(var(--slide-w) / -2);
+  margin-top: calc(var(--slide-h) / -2);
+  transform-origin: 50% 50%;
+  transform: scale(var(--scale, 1));
+  pointer-events: none;
+}
+
+.deck-chrome {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px 14px;
+  font: 500 13px/1 "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--chrome-ink);
+  pointer-events: none;
+}
+
+.deck-help-btn {
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.deck-help-btn:hover {
+  color: var(--chrome-accent);
+  border-color: var(--chrome-accent);
+}
+
+.deck-counter {
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-progress {
+  position: absolute;
+  left: 104px;
+  right: 104px;
+  bottom: 43px;
+  z-index: 3;
+  height: 22px;
+  background: transparent;
+}
+
+.deck-progress::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10px;
+  height: 2px;
+  background: var(--chrome-rule);
+}
+
+.deck-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  height: 2px;
+  width: 0;
+  background: var(--chrome-accent);
+  transition: width 240ms ease;
+}
+
+.deck-progress-commits {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-progress-commits i {
+  position: absolute;
+  left: var(--commit-position);
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #d8e0e5;
+  box-shadow: 0 0 0 1px var(--chrome-rule);
+  transform: translateX(-50%);
+  transition: background 240ms ease, box-shadow 240ms ease, transform 240ms ease;
+}
+
+.deck-progress-commits i.is-complete {
+  background: var(--chrome-accent);
+}
+
+.deck-progress-commits i.is-current {
+  box-shadow: 0 0 0 2px var(--chrome-accent), 0 0 0 7px rgba(240, 60, 46, 0.12);
+  transform: translateX(-50%) scale(1.18);
+}
+
+/* ---------- help overlay ------------------------------------------------ */
+
+.deck-help[hidden] {
+  display: none;
+}
+
+.deck-help {
+  position: absolute;
+  inset: 0;
+  z-index: 5; /* above the chrome layer */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 26, 37, 0.97);
+  backdrop-filter: blur(3px);
+  font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #f7f8f9;
+}
+
+.deck-help table {
+  border-collapse: collapse;
+}
+
+.deck-help caption {
+  padding-bottom: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.deck-help td {
+  padding: 4px 14px 4px 0;
+}
+
+.deck-help kbd {
+  display: inline-block;
+  min-width: 12px;
+  padding: 2px 7px;
+  border: 1px solid var(--chrome-rule);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  font: 500 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+/* ---------- portrait phones --------------------------------------------- */
+
+/*
+  A 16:9 stage in a phone's portrait viewport scales to about 0.3 — a band a
+  third of the screen tall with 5px body text. Ask for landscape instead, but
+  let a tap through for anyone who wants to look regardless. Touch pointers
+  only: a narrow desktop window is not something you rotate.
+*/
+.deck-rotate {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 700px) and (pointer: coarse) {
+  .deck-rotate {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 32px;
+    background: var(--stage-bg);
+    font: 17px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: #f7f8f9;
+    text-align: center;
+  }
+}
+
+.deck-rotate[hidden] {
+  display: none;
+}
+
+.deck-rotate svg {
+  color: var(--chrome-accent);
+}
+
+.deck-rotate p {
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+
+.deck-rotate small {
+  display: block;
+  max-width: 22em;
+  font-size: 14px;
+  color: var(--chrome-ink);
+}
+
+/* ---------- blanked screen ---------------------------------------------- */
+
+.deck.is-blank {
+  background: #000;
+}
+
+.deck.is-blank .deck-slides,
+.deck.is-blank .deck-chrome,
+.deck.is-blank .deck-progress {
+  opacity: 0;
+}
+
+/* ---------- speaker view ------------------------------------------------ */
+
+/*
+  ?speaker turns this page into the presenter console: the deck keeps running
+  on the left (its own keys still work and are relayed to the projector
+  window) and this bar takes the right of the window. The sidebar is laid out
+  for 340px; layout() in deck.js subtracts the same width.
+*/
+:root {
+  --speaker-bar-w: 340px;
+}
+
+.deck.deck-speaker {
+  right: var(--speaker-bar-w);
+}
+
+/* The in-deck chrome (counter, progress, help button) is replaced by the bar. */
+.deck-speaker .deck-chrome-layer {
+  display: none;
+}
+
+.deck-speaker-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  width: var(--speaker-bar-w);
+  padding: 18px;
+  border-left: 1px solid var(--chrome-rule);
+  background: #0a1e2b;
+  color: #eef2f5;
+  font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.sp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-head strong {
+  font-size: 15px;
+}
+
+.sp-head-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sp-counter {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/*
+  The explicit way out of the console: closes the popup, and in a tab the
+  browser won't let us close, exitSpeakerView() turns the window back into
+  the plain deck instead.
+*/
+.sp-close {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: 600 16px/1 "Segoe UI", system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+}
+
+.sp-close:hover {
+  border-color: var(--chrome-accent);
+  color: var(--chrome-accent);
+}
+
+.sp-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chrome-ink);
+}
+
+/*
+  The next-slide preview: a real slide clone (1280x720) scaled into the bar's
+  inner width — 340px minus 2x18px padding minus the 1px borders = 302px.
+*/
+.sp-next-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.sp-next-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--slide-w);
+  height: var(--slide-h);
+  transform: scale(0.23594); /* 302 / 1280 */
+  transform-origin: 0 0;
+}
+
+.sp-next-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 30, 43, 0.9);
+  color: var(--chrome-ink);
+  font-size: 13px;
+}
+
+/* The flex above out-specifies the hidden attribute's display:none, so
+   spell the hidden state out — same trap .deck-help[hidden] guards against. */
+.sp-next-empty[hidden] {
+  display: none;
+}
+
+.sp-notes {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sp-notes-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.sp-notes-body p {
+  margin: 0 0 0.5em;
+}
+
+.sp-notes-body p:last-child {
+  margin-bottom: 0;
+}
+
+.sp-notes-empty {
+  color: var(--chrome-ink);
+}
+
+.sp-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sp-timer {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-reset {
+  padding: 4px 10px;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.sp-reset:hover {
+  border-color: var(--chrome-accent);
+  color: var(--chrome-accent);
+}
+
+.sp-clock {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--chrome-ink);
+}
+
+/* One-off notice, e.g. when the speaker popup was blocked. */
+.deck-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  z-index: 6;
+  padding: 10px 16px;
+  border: 1px solid var(--chrome-rule);
+  border-radius: 8px;
+  background: rgba(9, 26, 37, 0.92);
+  color: #f7f8f9;
+  font: 14px/1.4 "Segoe UI", system-ui, -apple-system, sans-serif;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-slide,
+  .fragment,
+  .deck-slides,
+  .deck-progress > span {
+    transition: none !important;
+  }
+}
+
+/* ---------- print --------------------------------------------------------- */
+
+/*
+  Ctrl/⌘-P (or "Save as PDF") turns the deck into a handout: one slide per
+  page, fragments and stepped code lines fully revealed, chrome hidden. The
+  page size matches the slides exactly, so the PDF needs no margins and no
+  scaling. print-color-adjust: exact forces the dark title/closing pages to
+  keep their backgrounds even when the print dialog's "background graphics"
+  switch is off.
+*/
+@media print {
+  @page {
+    size: 1280px 720px;
+    margin: 0;
+  }
+
+  html,
+  body.deck-page {
+    overflow: visible;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .deck {
+    position: static;
+    background: none;
+  }
+
+  .deck-slides {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+  }
+
+  /* Even if the engine never ran (JS blocked), print what is there. */
+  .deck:not(.is-ready) .deck-slides {
+    visibility: visible;
+  }
+
+  .deck-slide {
+    position: relative;
+    inset: auto;
+    visibility: visible;
+    opacity: 1;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .deck-slide:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* A printed handout shows everything: every step revealed, no offsets. */
+  .fragment {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .deck-chrome-layer,
+  .deck-help,
+  .deck-rotate,
+  .deck-speaker-bar {
+    display: none !important;
+  }
+}

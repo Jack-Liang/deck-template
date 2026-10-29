@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deck 模板 — 双击就能放的 HTML 幻灯片</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+
+    <link rel="stylesheet" href="css/deck.css" />
+    <link rel="stylesheet" href="css/custom.css" />
+  </head>
+  <body class="deck-page">
+    <!--
+      这份 index.html 是模板的「自演示」：16 页正好把设计系统的每种
+      版式用一遍，页面内容同时在讲这个版式怎么用。做你自己的稿子时，
+      整页删换成你的 section 即可——引擎只认 .deck > .deck-slides > section。
+      源码里还有一处彩蛋：按住 Shift，敲一下 E。
+    -->
+    <div class="deck">
+      <div class="deck-slides">
+        <!-- 1 - 开场页：深色，活动顶行 + 标题 + 讲者 + logo 位 -->
+        <section data-state="title" class="slide-title">
+          <div class="ambient ambient-two" aria-hidden="true"></div>
+          <div class="title-topline">
+            <span class="edition">技术分享模板</span>
+            <span class="topline-divider" aria-hidden="true"></span>
+            <span class="edition edition-date">2026</span>
+          </div>
+          <div class="title-layout">
+            <div class="title-copy">
+              <h1>双击就能放的<br /><span>HTML 幻灯片</span></h1>
+              <p class="byline"><i aria-hidden="true"></i>你的名字</p>
+            </div>
+          </div>
+          <aside class="notes">开场页：edition 换成场次（「内部技术分享 / Meetup / DSAG」），byline 是讲者。要放主办方/公司标就加一行 .title-logos（custom.css 有现成样式，assets 里有 logo-a/b.svg 占位图），别学这页省略。</aside>
+        </section>
+
+        <!-- 2 - 总览：steps-3 三步卡片 -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">Agenda</p>
+            <h2>这份模板怎么用</h2>
+            <p>示例稿本身就是说明书：先看版式，再学放映和导出，最后把内容换成你的。每一页的备注栏都写着这页在演示什么。</p>
+          </header>
+          <div class="steps steps-3" aria-label="三步">
+            <article class="step">
+              <span>01</span>
+              <h3>认版式</h3>
+              <p>开场、章节、内容、截图、过场、结束——每页一种，抄走改字就能用。</p>
+            </article>
+            <article class="step">
+              <span>02</span>
+              <h3>学操作</h3>
+              <p>翻页、总览、演讲者视图、逐段点亮的代码，全是键盘快捷键，按 <code>? </code>随时查。</p>
+            </article>
+            <article class="step">
+              <span>03</span>
+              <h3>换成你的</h3>
+              <p>只动 index.html 和 css/custom.css：内容、换色、字体都在这两个文件里。</p>
+            </article>
+          </div>
+          <aside class="notes">总览页用 steps-3（三步卡片；四步就去掉 -3 修饰符）。备注只出现在演讲者视图，放映时观众看不到。</aside>
+        </section>
+
+        <!-- 3 - 讲者页：一人或两人，联系方式带品牌图标 -->
+        <section class="slide-speakers">
+          <div class="slide-heading">
+            <h2>讲者</h2>
+          </div>
+          <div class="people">
+            <article class="speaker">
+              <h3>一位讲者</h3>
+              <p class="role">你的团队 &middot; 你的城市</p>
+              <p class="experience"><strong>10+</strong><span>年写代码，若干年讲课</span></p>
+              <ul>
+                <li>一行介绍你的主业</li>
+                <li>一行介绍你为什么讲这个题</li>
+              </ul>
+              <p class="contact">
+                <a target="_blank" rel="noopener" href="#"><span class="icon icon-github" aria-hidden="true"></span>@yourname</a>
+                <a target="_blank" rel="noopener" href="#"><span class="icon icon-x" aria-hidden="true"></span>@yourname</a>
+              </p>
+            </article>
+            <article class="speaker speaker-alt">
+              <h3>第二位讲者</h3>
+              <p class="role">可选 &middot; 双讲者版式</p>
+              <p class="experience"><strong>2?</strong><span>讲得少的那位放右边</span></p>
+              <ul>
+                <li>只你一个人讲时，整页删掉即可</li>
+                <li>第二位讲者的点缀色自动换成深蓝</li>
+              </ul>
+              <p class="contact">
+                <a target="_blank" rel="noopener" href="#"><span class="icon icon-bluesky" aria-hidden="true"></span>yourname.bsky.social</a>
+                <a target="_blank" rel="noopener" href="#"><span class="icon icon-linkedin" aria-hidden="true"></span>in/yourname</a>
+              </p>
+            </article>
+          </div>
+          <aside class="notes">讲者页：experience 的大数字换成你的口径；contact 的图标有 github / x / bluesky / linkedin 四种，样式在 custom.css 的 .icon 一节。</aside>
+        </section>
+
+        <!-- 4 - 章节页：深色分节，右上有太阳装饰 -->
+        <section data-state="chapter" data-no-labels class="slide-chapter">
+          <div class="chapter-copy">
+            <p class="eyebrow">Part One</p>
+            <h2>版式<br /><span>组件</span></h2>
+            <p>内容页的正文不是自由排版，而是往「版式槽」里填：卡片、数字、时间线、路径图、标签、金句、链接卡、代码、双栏、整页截图。这章各来一遍。</p>
+          </div>
+          <aside class="notes">章节页：h2 的 span 换强调色；一段导语说明这章讲什么。</aside>
+        </section>
+
+        <!-- 5 - 数字页：stats 三块 + takeaway，takeaway 步进亮起 -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 数字</p>
+            <h2>stats：三个大数字</h2>
+            <p>数字比形容词有说服力。三块瓷砖各配一行小字，颜色自动按强调色&mdash;过渡色&mdash;深色递进。</p>
+          </header>
+          <div class="stats" aria-label="模板的三组数字">
+            <article class="stat stat-blend">
+              <strong>0</strong>
+              <span>运行时依赖：没有框架、没有构建</span>
+            </article>
+            <article class="stat stat-deep">
+              <strong>3</strong>
+              <span>种导出：分发包 zip、打印 PDF、单文件 HTML</span>
+            </article>
+            <article class="stat stat-accent">
+              <strong>16:9</strong>
+              <span>设计稿尺寸 1280&times;720，投影不满屏不变形</span>
+            </article>
+          </div>
+          <div class="takeaway fragment">
+            <strong>takeaway 是压轴</strong>
+            <p>每页最底下那根深色结论条就是它——这句通常是你希望观众唯一记住的话，所以留到最后按 &rarr; 再亮（本页正在演示 fragment 步进）。</p>
+          </div>
+          <aside class="notes">数字页：任何块加 class="fragment" 就能按 → 逐个亮起，不限于卡片；打印和导出 PDF 时全部自动展开成完整版。</aside>
+        </section>
+
+        <!-- 6 - 卡片栏：facts 三栏 + 首字母高亮 -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 卡片</p>
+            <h2>facts：三栏事实</h2>
+            <p>不放数字的并列事实用 facts：三栏各一段，顶线条纹按强调色轮换。<span class="init">H</span><span class="init">T</span><span class="init">M</span><span class="init">L</span> 里的 <code>init</code> 类还能把缩写逐字母点亮，像这四个字母。</p>
+          </header>
+          <div class="facts" aria-label="三种内容形态">
+            <article>
+              <strong>卡片 &middot; facts / steps</strong>
+              <p>并列的事实、流程、对照都走卡片；两栏放不下就三栏，六张卡自动排两行。</p>
+            </article>
+            <article>
+              <strong>大图 &middot; shot-inline / screen</strong>
+              <p>截图嵌在文字旁用 shot-inline，整页只放一张图用 screen——录屏 GIF 也走这两个槽。</p>
+            </article>
+            <article>
+              <strong>代码 &middot; pre[data-lines]</strong>
+              <p>代码块自带语法高亮，data-lines 声明步进分组，按 &rarr; 逐段点亮、未点到的行压暗不隐藏。</p>
+            </article>
+          </div>
+          <div class="takeaway">
+            <strong>组合而非排版</strong>
+            <p>标题区 + 一个正文槽 + 可选的 takeaway，就是一张内容页的全部结构；你决定往槽里放什么。</p>
+          </div>
+          <aside class="notes">卡片页：facts 顶条颜色按 1/2/3 栏轮换（红-紫-蓝）；导语里的 init 首字母高亮适合展开缩写词。</aside>
+        </section>
+
+        <!-- 7 - 时间线：timeline -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 时间线</p>
+            <h2>timeline：一条沿革</h2>
+            <p>历史、路线图、演进史放这：竖轴自动渐变，圆点颜色按条目轮换，第三列是自由正文。</p>
+          </header>
+          <div class="timeline" aria-label="模板沿革">
+            <article>
+              <i aria-hidden="true"></i>
+              <span>origin</span>
+              <strong>原版引擎</strong>
+              <p>larshp 为 DSAG 2026 场次写的纯 HTML 幻灯片，无框架无构建。</p>
+            </article>
+            <article>
+              <i aria-hidden="true"></i>
+              <span>fork</span>
+              <strong>类名通用化</strong>
+              <p>把演讲专属的样式改写成设计系统：版式、组件、状态三层的通用类名。</p>
+            </article>
+            <article>
+              <i aria-hidden="true"></i>
+              <span>you</span>
+              <strong>你的场次</strong>
+              <p>从这页开始往后都是你的内容——时间线最多三格，多了就拆两页。</p>
+            </article>
+          </div>
+          <aside class="notes">时间线：第一列是装饰圆点（i 留空），第二列短标签，第三列标题+正文；条目数建议 2–3 条。</aside>
+        </section>
+
+        <!-- 8 - 路径图：path，三个元素各自步进 -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 路径</p>
+            <h2>path：A 到 B</h2>
+            <p>迁移、对译、前后对比都用这张图：两张节点卡，中间一根带箭头的连接线。三个元素都加了 fragment，按 &rarr; 逐个出现。</p>
+          </header>
+          <div class="path" aria-label="从演示文稿到 HTML">
+            <div class="path-node fragment">
+              <span>Before</span>
+              <strong>pptx / 在线平台：导出即过时，换台电脑就变形</strong>
+            </div>
+            <div class="path-link fragment" aria-hidden="true">
+              <span>换成</span>
+              <i></i>
+            </div>
+            <div class="path-node path-node-alt fragment">
+              <span>After</span>
+              <strong>一个文件夹：文本 diff 可审、git 可存、双击就能放</strong>
+            </div>
+          </div>
+          <aside class="notes">路径图：连接线的 i 是纯装饰（aria-hidden），文字放 span 胶囊里；右节点自动用深蓝点缀。</aside>
+        </section>
+
+        <!-- 9 - 标签墙：pills -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 标签</p>
+            <h2>pills：一口气列完</h2>
+            <p>不想逐条展开、又想让人看见全貌的时候：一行标签墙，放得下就自动换行。</p>
+          </header>
+          <div class="pills" aria-label="模板特性">
+            <span>无构建</span>
+            <span>零依赖</span>
+            <span>离线放映</span>
+            <span>16:9 适配投影</span>
+            <span>触屏翻页</span>
+            <span>总览模式</span>
+            <span>演讲者视图</span>
+            <span>逐段代码步进</span>
+            <span>深色页打印保真</span>
+            <span>单文件导出</span>
+            <span>zip 分发</span>
+          </div>
+          <aside class="notes">标签墙：pills 里只有 span，没有图标和链接——它是「一览」不是「导航」，导航链接用 cards。</aside>
+        </section>
+
+        <!-- 10 - 金句页：slide-sparse + quote -->
+        <section class="slide-content slide-sparse">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 金句</p>
+            <h2>quote：一句话占一页</h2>
+            <p>slide-sparse 修饰符去掉正文槽，让一句话独占整页。</p>
+          </header>
+          <blockquote class="quote">
+            工具越简单，讲的人越自由——模板的全部野心，是让你忘掉模板。
+            <cite>deck-template</cite>
+          </blockquote>
+          <aside class="notes">金句页：section 上加 slide-sparse，quote 会自动放大；cite 是出处，可删。</aside>
+        </section>
+
+        <!-- 11 - 链接卡：cards -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 链接</p>
+            <h2>cards：留给观众的入口</h2>
+            <p>观众回家以后会点的链接放这：两栏各一张卡，卡片本身就是链接。</p>
+          </header>
+          <div class="cards" aria-label="相关链接">
+            <a class="card" target="_blank" rel="noopener" href="https://github.com/larshp/dsag-git-2026">
+              <p class="card-name">上游致敬</p>
+              <p class="card-url">github.com/larshp/dsag-git-2026</p>
+              <p class="card-desc">原版引擎与设计风格的出处，感谢 larshp。</p>
+            </a>
+            <a class="card" target="_blank" rel="noopener" href="#">
+              <p class="card-name">你的仓库</p>
+              <p class="card-url">github.com/you/deck-template</p>
+              <p class="card-desc">fork 之后这里换成你自己的地址；配套讲义模板是 <span class="file-ref">handout.md</span>，随包一起分发。</p>
+            </a>
+          </div>
+          <aside class="notes">链接卡：card-name 是小标签、card-url 是主标题、card-desc 一句话说明；file-ref 样式用来标注包内文件。</aside>
+        </section>
+
+        <!-- 12 - 代码页：pre[data-lines] 逐段点亮 -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 代码</p>
+            <h2>data-lines：代码逐段讲</h2>
+            <p>pre 上声明 <code>data-lines="1,2-3,5"</code>（1 基行号，逗号分步、支持区间），按 &rarr; 逐段点亮，未点到的行压暗不隐藏，代码块形状不变。</p>
+          </header>
+          <pre data-lines="1,2,3,5-6"><code class="language-bash"># 三条命令跑起来
+python3 -m http.server 8644
+
+# 浏览器打开（或者直接双击 index.html）
+open http://127.0.0.1:8644</code></pre>
+          <div class="takeaway">
+            <strong>语法高亮内置</strong>
+            <p>js/highlight.js 自带 bash / json / yaml / diff 语法，几十行、无依赖；代码页建议一页不超过十行，多了拆两页。</p>
+          </div>
+          <aside class="notes">代码页：这页分四步点亮（第 1、2、3、5-6 行）；高亮语法表在 js/highlight.js 顶部的 GRAMMARS 里，加新语言就是加一条正则。</aside>
+        </section>
+
+        <!-- 13 - 双栏体：split-body（机制图 + 内嵌截图） -->
+        <section class="slide-content">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 双栏</p>
+            <h2>split-body：左图右证</h2>
+            <p>左边讲机制（mech 节点图），右边放证据（shot-inline 内嵌截图），下面压一根结论条。</p>
+          </header>
+          <div class="split-body">
+            <div class="mech" aria-label="模板的文件构成">
+              <div class="mech-node">
+                <span>内容</span>
+                <strong>index.html + css/custom.css</strong>
+              </div>
+              <div class="mech-arrow">&darr;&nbsp;&nbsp;交给&nbsp;&nbsp;&darr;</div>
+              <div class="mech-node mech-node-alt">
+                <span>引擎</span>
+                <strong>js/deck.js + js/highlight.js</strong>
+              </div>
+            </div>
+            <figure class="shot-inline">
+              <img src="assets/placeholder-inline.svg" alt="占位截图：演示 shot-inline 内嵌图的比例与投影样式" />
+              <figcaption>shot-inline &middot; 占位图，换成你的截图</figcaption>
+            </figure>
+          </div>
+          <div class="takeaway">
+            <strong>改内容不碰引擎</strong>
+            <p>内容和引擎物理隔离：讲稿全在 index.html，行为全在 js/——你几乎永远只改前两个文件。</p>
+          </div>
+          <aside class="notes">双栏页：mech 上下两个节点卡中间夹一行箭头；右栏 shot-inline 高度上限比整页版低，给 takeaway 留空间。</aside>
+        </section>
+
+        <!-- 14 - 整页截图：slide-screen -->
+        <section class="slide-screen">
+          <header class="content-heading">
+            <p class="eyebrow">版式组件 &middot; 大图</p>
+            <h2>screen：图就是页</h2>
+            <p>需要观众看清每个像素的那张图，整页给它：标题只留一行，图片吃掉剩下的全部高度，保持约 16:9 永远高度受限不溢出。</p>
+          </header>
+          <figure class="screen-shot">
+            <img src="assets/placeholder-screen.svg" alt="占位大图：演示 screen 版式的整页截图比例" />
+            <figcaption>screen &middot; 占位图，换成产品截图或录屏 GIF</figcaption>
+          </figure>
+          <aside class="notes">整页截图：录屏 GIF 放这个版式自动循环；相邻页的大图引擎会预热解码，首次翻到不卡帧。</aside>
+        </section>
+
+        <!-- 15 - 过场页：interlude，深色大字 + 太阳 -->
+        <section data-state="chapter" data-no-labels class="slide-interlude">
+          <div class="ambient ambient-glow" aria-hidden="true"></div>
+          <svg class="sun" viewBox="0 0 100 100" role="img" aria-label="太阳装饰">
+            <circle class="sun-disc" cx="50" cy="50" r="18" />
+            <g class="sun-rays">
+              <line x1="50" y1="10" x2="50" y2="24" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(30 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(60 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(90 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(120 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(150 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(180 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(210 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(240 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(270 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(300 50 50)" />
+              <line x1="50" y1="10" x2="50" y2="24" transform="rotate(330 50 50)" />
+            </g>
+          </svg>
+          <aside class="notes">过场页：一个词 + 一个装饰就够（「Demo?」「休息」「谢谢」）；太阳 SVG 是示例装饰，整个可换。</aside>
+        </section>
+
+        <!-- 16 - 结束页：closing，Q&A + 二维码 -->
+        <section data-state="closing" class="slide-closing">
+          <div class="closing-copy">
+            <p class="eyebrow">Thanks</p>
+            <h2>Questions?</h2>
+            <ul class="links">
+              <li><a target="_blank" rel="noopener" href="#">仓库地址</a></li>
+              <li><a target="_blank" rel="noopener" href="#">在线讲义</a></li>
+            </ul>
+            <p class="closing-note">扫码或点击二维码，直达这份模板。</p>
+          </div>
+          <div class="qr">
+            <div class="qr-frame">
+              <a class="qr-link" target="_blank" rel="noopener" href="#">
+                <img src="assets/qr-placeholder.svg" alt="二维码占位图" />
+              </a>
+            </div>
+            <p>换成你的二维码</p>
+          </div>
+          <aside class="notes">结束页：二维码图片本身可点击；导出 PDF 时可用打印样式隐藏它（见 custom.css 打印段的注释开关），单文件导出加 --no-qr 直接从产物里摘除。</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="js/highlight.js"></script>
+    <script src="js/deck.js"></script>
+    <script src="js/easter-egg.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Placeholder roundel">
+  <!-- Placeholder roundel for the dark title slide. Replace with the real
+       mark; height is set by .logo-b in custom.css. -->
+  <circle cx="48" cy="48" r="43" fill="none" stroke="#5f8ca4" stroke-width="4"/>
+  <circle cx="48" cy="48" r="34" fill="#173f57"/>
+  <text x="48" y="59" text-anchor="middle" fill="#ffffff" font-family="Cascadia Mono, SFMono-Regular, Consolas, monospace" font-size="24" font-weight="650">B</text>
+</svg>

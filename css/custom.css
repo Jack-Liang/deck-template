@@ -1,0 +1,1621 @@
+/*
+  Design system for the deck template.
+
+  Derived from larshp's DSAG 2026 slides (github.com/larshp/dsag-git-2026),
+  with the class names generalised. Slide archetypes:
+
+    .slide-title       opening slide (dark, event topline, speakers, logos)
+    .slide-speakers    one or two speaker cards
+    .slide-chapter     dark chapter divider (data-state="chapter")
+    .slide-content     the standard content slide (heading + one body layout)
+    .slide-sparse      modifier: one statement instead of a row of items
+    .slide-screen      a screenshot is the slide
+    .slide-interlude   dark breather slide (Demo?, decorative mark)
+    .slide-closing     Q&A + links + QR (data-state="closing")
+
+  Body layouts that drop into a .slide-content:
+
+    .content-heading   eyebrow + title + lead paragraph
+    .stats             three metric tiles (.stat + .stat-accent/-blend/-deep)
+    .takeaway          dark full-width conclusion bar
+    .steps / .steps-3  numbered process rail, four or three steps
+    .facts             three plain fact columns
+    .timeline          vertical history rail with dots
+    .path              A -> connector -> B diagram (.path-node, .path-link)
+    .pills             row of tag pills
+    .quote             large quotation
+    .cards             link cards (.card with .card-name/-url/-desc)
+    pre > code         code blocks, highlighted by js/highlight.js
+    .fragment          step-by-step reveal inside any slide
+*/
+
+:root {
+  /* Palette: accent = the hot colour, deep = the dark colour. The rgb
+     triplets exist so rgba() tints can follow when you change the hex. */
+  --accent: #f03c2e;
+  --accent-light: #ff796d;
+  --accent-rgb: 240, 60, 46;
+  --deep: #173f57;
+  --deep-light: #5f8ca4;
+  --deep-rgb: 23, 63, 87;
+  --blend: #a34865; /* halfway mix of the two, for three-step progressions */
+  --ink: #112b3b;
+  --muted: #5b7080;
+  --white: #fff;
+  --rule: rgba(var(--deep-rgb), 0.16);
+  --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --sans: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---------- deck states ------------------------------------------------ */
+
+/*
+  The deck background follows the current slide's data-state attribute:
+  "title" and "chapter" get the dark gradient, "content" and "closing" the
+  paper white. Anything else you set as data-state needs a rule here or it
+  falls back to the white look.
+*/
+
+.deck[data-slide-state="title"],
+.deck[data-slide-state="chapter"] {
+  background: linear-gradient(115deg, #071721 8%, #173f57 62%, #583447 100%);
+}
+
+.deck[data-slide-state="title"]::after,
+.deck[data-slide-state="chapter"]::after {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.deck[data-slide-state="title"] .deck-counter,
+.deck[data-slide-state="title"] .deck-help-btn,
+.deck[data-slide-state="title"] .deck-progress {
+  display: none;
+}
+
+.deck[data-slide-state="chapter"] .deck-counter {
+  display: inline;
+  color: rgba(255, 255, 255, 0.68);
+  font-weight: 650;
+}
+
+.deck[data-slide-state="chapter"] .deck-progress::before {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.deck[data-slide-state="chapter"] .deck-progress-fill {
+  background: linear-gradient(90deg, var(--accent-light), #d45b78 62%, #82a9bd);
+}
+
+.deck[data-slide-state="content"] .deck-counter,
+.deck[data-slide-state="closing"] .deck-counter {
+  display: inline;
+  color: rgba(var(--deep-rgb), 0.65);
+  font-weight: 650;
+}
+
+.deck-counter {
+  transform: translate(-16px, -12px);
+}
+
+/*
+  Slides marked data-no-labels: nothing in the corners competing with the
+  artwork. The progress bar stays — it is part of the design. Must come after
+  the per-state rules above, which set the counter back to display: inline at
+  the same specificity.
+*/
+.deck.is-unlabelled .deck-counter,
+.deck.is-unlabelled .deck-help-btn {
+  display: none;
+}
+
+.deck[data-slide-state="content"] .deck-progress::before,
+.deck[data-slide-state="closing"] .deck-progress::before {
+  background: rgba(var(--deep-rgb), 0.16);
+}
+
+.deck[data-slide-state="content"] .deck-progress-fill,
+.deck[data-slide-state="closing"] .deck-progress-fill {
+  background: linear-gradient(90deg, var(--accent), var(--blend) 58%, var(--deep));
+}
+
+.deck[data-slide-state="content"],
+.deck[data-slide-state="closing"] {
+  background:
+    radial-gradient(circle at 94% 5%, rgba(var(--accent-rgb), 0.06), transparent 30%),
+    radial-gradient(circle at 82% 95%, rgba(var(--deep-rgb), 0.06), transparent 34%),
+    var(--white);
+}
+
+.deck[data-slide-state="content"]::after,
+.deck[data-slide-state="closing"]::after {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  z-index: 2;
+  border: 1px solid rgba(var(--deep-rgb), 0.07);
+  pointer-events: none;
+}
+
+.deck[data-slide-state="content"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 18px;
+  z-index: 2;
+  background: linear-gradient(var(--accent), #c5445d 48%, var(--deep));
+  pointer-events: none;
+}
+
+/* ---------- base type --------------------------------------------------- */
+
+.deck-slides {
+  font-family: var(--sans);
+  font-size: 44px; /* the body size everything else scales from with em */
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.deck-slide { overflow: hidden; background: transparent; }
+
+.deck-slide::after { display: none; }
+
+.deck-slide > * { position: relative; z-index: 1; }
+.deck-slide h1,
+.deck-slide h2,
+.deck-slide h3,
+.deck-slide p,
+.deck-slide ul { margin-top: 0; }
+
+.deck-slide h1,
+.deck-slide h2,
+.deck-slide h3 {
+  margin-bottom: 0;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.deck-slide h1 { font-size: 1.92em; font-weight: 760; }
+.deck-slide h2 { font-size: 1.46em; font-weight: 740; }
+.deck-slide h3 { font-size: 1.05em; font-weight: 720; }
+
+.deck-slide a {
+  color: inherit;
+  text-decoration-color: rgba(var(--accent-rgb), 0.45);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+/* Inline citation links: a short label plus ↗ must never split across lines. */
+.deck-slide .content-heading a { white-space: nowrap; }
+
+/* Brand icons (defined below with .contact) sit inline in link text:
+   nudge to the text baseline, plus breathing room. */
+.deck-slide a .icon { vertical-align: -0.125em; margin-right: 0.18em; }
+
+/* Mono kicker above a heading. The dash before it comes from ::before. */
+.eyebrow,
+.edition {
+  font-family: var(--mono);
+  font-size: 0.34em;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--accent);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+/* ---------- title slide ------------------------------------------------- */
+
+.deck-slide.slide-title {
+  display: flex;
+  flex-direction: column;
+  padding: 50px 68px 54px;
+  color: var(--white);
+  background: transparent;
+}
+
+.deck-slide.slide-title::after { display: none; }
+
+/* Blurred colour wash behind the copy. Any absolutely positioned blob. */
+.ambient {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.7;
+}
+
+.ambient-two {
+  left: 300px;
+  bottom: -300px;
+  width: 650px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(116, 63, 101, 0.45), transparent 65%);
+}
+
+.title-topline {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  height: 48px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.edition { color: rgba(255, 255, 255, 0.64); }
+.edition-date { color: rgba(255, 255, 255, 0.44); }
+
+.topline-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.title-layout {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.title-copy h1 {
+  max-width: 960px;
+  color: var(--white);
+  font-size: 2.08em;
+}
+
+/* The second line of the title picks up the gradient. */
+.title-copy h1 span {
+  color: transparent;
+  background: linear-gradient(92deg, var(--accent-light), #f05256 38%, #c24b68 70%, #a85b80);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 30px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.47em;
+  font-weight: 520;
+}
+
+.byline i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Swap assets/logo-a.svg and logo-b.svg for the real marks; keep them
+   light-on-dark here. */
+.title-logos {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.logo-a { height: 34px; }
+.logo-b { height: 54px; }
+
+.logo-divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- speakers ----------------------------------------------------- */
+
+.deck-slide.slide-speakers {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px 76px 108px 92px;
+}
+
+.slide-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 31px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.slide-heading h2 { padding-top: 0; }
+
+.people {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 92px;
+  margin-top: 45px;
+  padding-left: 0;
+}
+
+.speaker { position: relative; }
+
+.speaker + .speaker {
+  padding-left: 46px;
+  border-left: 1px solid var(--rule);
+}
+
+.speaker h3 { color: var(--ink); }
+
+.role {
+  margin: 13px 0 18px;
+  color: var(--muted);
+  font-size: 0.5em;
+  font-weight: 580;
+}
+
+/* Experience badge: big number, quiet caption — readable from the back row. */
+.experience {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0 0 24px;
+}
+
+.experience strong {
+  color: var(--accent);
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.experience span {
+  color: var(--muted);
+  font: 560 0.42em/1.2 var(--mono);
+}
+
+/* Second speaker gets the deep colour instead of the accent. */
+.speaker-alt .experience strong { color: var(--deep); }
+
+.speaker ul {
+  margin: 0;
+  padding-left: 1em;
+  color: #2a4251;
+  font-size: 0.54em;
+  line-height: 1.42;
+}
+
+.speaker li { margin: 0 0 10px; padding-left: 5px; }
+.speaker li::marker { color: var(--accent); }
+.speaker-alt li::marker { color: var(--deep); }
+
+.contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+  margin: 30px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+  font: 520 0.38em/1.2 var(--mono);
+}
+
+.contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.contact a:hover { color: var(--accent); }
+
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.icon-github { background-image: url("../assets/icons/github.svg"); }
+.icon-linkedin { background-image: url("../assets/icons/linkedin.svg"); }
+.icon-x { background-image: url("../assets/icons/twitter-x.svg"); }
+.icon-bluesky { background-image: url("../assets/icons/bluesky.svg"); }
+
+/* ---------- chapter divider ---------------------------------------------- */
+
+/* data-state="chapter" supplies the dark background; add data-no-labels to
+   drop the corner chrome. */
+.deck-slide.slide-chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 74px 100px 104px;
+  color: var(--white);
+}
+
+.chapter-copy .eyebrow {
+  margin-bottom: 28px;
+  color: var(--accent-light);
+}
+
+.chapter-copy h2 {
+  margin: 0;
+  font-size: 2.18em;
+  line-height: 0.9;
+  letter-spacing: -0.065em;
+}
+
+.chapter-copy h2 span {
+  color: var(--accent-light);
+}
+
+.chapter-copy > p:last-child {
+  max-width: 470px;
+  margin: 30px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.43em;
+  line-height: 1.45;
+}
+
+/* ---------- content slide frame ------------------------------------------ */
+
+/*
+  Centred, not top-aligned: these slides carry very different amounts of body,
+  so pinning them to the top left anything short stranded above a deep void.
+  The bottom padding is larger than the top, so content still sits a touch
+  above true centre, which is what you want optically.
+*/
+.deck-slide.slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 58px 92px 100px;
+}
+
+/* Eyebrow over a two-column heading: title left, lead paragraph right. */
+.content-heading {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  column-gap: 72px;
+  align-items: end;
+}
+
+.content-heading .eyebrow {
+  grid-column: 1 / -1;
+  margin-bottom: 15px;
+}
+
+.content-heading h2 {
+  margin: 0;
+  font-size: 1.34em;
+}
+
+.content-heading > p:last-child {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 0.4em;
+  line-height: 1.45;
+}
+
+/* ---------- stats --------------------------------------------------------- */
+
+/* Three metric tiles. The ::after circle is a watermark in currentColor. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 42px;
+}
+
+.stat {
+  position: relative;
+  min-height: 142px;
+  padding: 26px 28px 24px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 32px rgba(var(--deep-rgb), 0.08);
+}
+
+.stat::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  bottom: -56px;
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.08;
+}
+
+.stat strong {
+  color: currentColor;
+  font-size: 1.16em;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.stat span {
+  display: block;
+  margin-top: 14px;
+  color: var(--ink);
+  font: 640 0.33em/1.2 var(--mono);
+}
+
+.stat-accent { color: var(--accent); }
+.stat-blend { color: var(--blend); }
+.stat-deep { color: var(--deep); }
+
+/* ---------- takeaway ------------------------------------------------------ */
+
+/* The one-sentence conclusion, as a dark bar with an accent edge. */
+.takeaway {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: center;
+  gap: 24px;
+  margin-top: 22px;
+  padding: 17px 24px;
+  border-left: 5px solid var(--accent);
+  color: var(--white);
+  background: linear-gradient(108deg, var(--deep), #254f66 62%, #51364a);
+}
+
+.takeaway strong {
+  color: var(--accent-light);
+  font-size: 0.4em;
+}
+
+.takeaway p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.32em;
+  line-height: 1.35;
+}
+
+/* ---------- steps --------------------------------------------------------- */
+
+/* A numbered process rail: the connector line runs through the badges. */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  margin-top: 82px;
+}
+
+.steps::before {
+  content: "";
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 25px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--blend), var(--deep));
+}
+
+/* Three steps instead of four, and tighter, since these slides carry a
+   takeaway bar under the flow. */
+.steps.steps-3 {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 56px;
+}
+
+.steps-3 .step { min-height: 128px; }
+
+.step {
+  position: relative;
+  min-height: 176px;
+  padding: 48px 23px 20px;
+  border-top: 1px solid var(--rule);
+  background: linear-gradient(180deg, rgba(var(--deep-rgb), 0.025), rgba(255, 255, 255, 0));
+}
+
+.step > span {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  z-index: 1;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 4px solid var(--white);
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.22);
+  font: 720 0.2em/1 var(--mono);
+}
+
+.step:nth-child(2) > span { background: #d54755; }
+.step:nth-child(3) > span { background: var(--blend); }
+.step:nth-child(4) > span { background: var(--deep); }
+
+.step h3 {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 0.4em;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.3em;
+  line-height: 1.42;
+}
+
+/* ---------- facts --------------------------------------------------------- */
+
+/* Three plain columns, told apart only by the top rule colour. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 38px;
+  margin-top: 48px;
+}
+
+.facts article {
+  padding-top: 18px;
+  border-top: 4px solid var(--accent);
+}
+
+.facts article:nth-child(2) { border-color: var(--blend); }
+.facts article:nth-child(3) { border-color: var(--deep); }
+
+.facts strong {
+  color: var(--ink);
+  font-size: 0.35em;
+}
+
+.facts p {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 0.28em;
+  line-height: 1.38;
+}
+
+/* ---------- timeline ------------------------------------------------------ */
+
+/* Vertical history rail: gradient spine, one dot colour per entry. */
+.timeline {
+  position: relative;
+  margin-top: 36px;
+  padding-left: 14px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 31px;
+  top: 20px;
+  bottom: 20px;
+  width: 3px;
+  background: linear-gradient(var(--accent), var(--blend), var(--deep));
+}
+
+.timeline article {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 200px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 15px;
+  min-height: 78px;
+  padding: 8px 0 12px;
+}
+
+.timeline i {
+  grid-row: 1 / 3;
+  align-self: start;
+  z-index: 1;
+  width: 13px;
+  height: 13px;
+  margin: 4px 0 0 10px;
+  border: 5px solid var(--white);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(var(--deep-rgb), 0.15);
+}
+
+.timeline article:nth-child(2) i { background: var(--blend); }
+.timeline article:nth-child(3) i { background: var(--deep); }
+
+.timeline span {
+  color: var(--muted);
+  font: 700 0.24em/1.2 var(--mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.timeline strong {
+  color: var(--ink);
+  font-size: 0.37em;
+}
+
+.timeline p {
+  grid-column: 3;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.28em;
+  line-height: 1.35;
+}
+
+/* ---------- path ---------------------------------------------------------- */
+
+/* A -> connector -> B. The nodes are cards; the connector is a labelled line
+   with an arrowhead. */
+.path {
+  display: grid;
+  grid-template-columns: 1fr 220px 1fr;
+  align-items: center;
+  gap: 26px;
+  margin: 48px 40px 0;
+}
+
+.path-node {
+  min-height: 116px;
+  padding: 23px 28px;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 30px rgba(var(--deep-rgb), 0.08);
+}
+
+.path-node span {
+  display: block;
+  color: var(--accent);
+  font: 780 0.31em/1 var(--mono);
+  text-transform: uppercase;
+}
+
+/* The right-hand node takes the deep colour. */
+.path-node-alt span { color: var(--deep); }
+
+.path-node strong {
+  display: block;
+  margin-top: 16px;
+  color: var(--ink);
+  font-size: 0.42em;
+}
+
+.path-link {
+  position: relative;
+  height: 70px;
+  text-align: center;
+}
+
+.path-link span {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--deep);
+  background: var(--white);
+  font: 720 0.26em/1 var(--mono);
+}
+
+.path-link i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 39px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--blend), var(--deep));
+}
+
+.path-link i::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -6px;
+  border-width: 7px 0 7px 11px;
+  border-style: solid;
+  border-color: transparent transparent transparent var(--deep);
+}
+
+/* ---------- pills --------------------------------------------------------- */
+
+/* Row of tag pills, labels only, no gloss per item. */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 56px;
+}
+
+.pills span {
+  padding: 10px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: 0 3px 10px rgba(var(--deep-rgb), 0.07);
+  font: 650 0.32em/1 var(--mono);
+  white-space: nowrap;
+}
+
+/* ---------- quote --------------------------------------------------------- */
+
+/* Slides carrying a single statement rather than a row of items (add
+   .slide-sparse to the section). Centring comes from .slide-content itself;
+   this only sizes the quote up to fill the frame it has to itself. */
+.slide-sparse .quote {
+  margin-top: 44px;
+  font-size: 0.62em;
+}
+
+.quote {
+  max-width: 900px;
+  margin: 52px 0 0;
+  color: var(--ink);
+  font-size: 0.54em;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+}
+
+.quote cite {
+  display: block;
+  margin-top: 16px;
+  color: var(--muted);
+  font: 650 0.42em/1 var(--mono);
+  font-style: normal;
+}
+
+/* ---------- cards --------------------------------------------------------- */
+
+/* Clickable source/reference cards, two up. */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  margin-top: 52px;
+}
+
+.card {
+  display: block;
+  padding: 26px 30px 28px;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 30px rgba(var(--deep-rgb), 0.08);
+  text-decoration: none;
+}
+
+.card-name {
+  margin: 0;
+  color: var(--accent);
+  font: 780 0.31em/1 var(--mono);
+  text-transform: uppercase;
+}
+
+.card + .card .card-name { color: var(--deep); }
+
+.card-url {
+  margin: 14px 0 0;
+  color: var(--ink);
+  font: 720 0.36em/1.2 var(--mono);
+}
+
+.card-desc {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 0.28em;
+  line-height: 1.42;
+}
+
+/* ---------- screenshot slide ---------------------------------------------- */
+
+/* The screen is the slide, so the heading takes what it needs and the figure
+   gets everything left over. Keep the image roughly 16:9 and it will always
+   be height-bound: every pixel the heading gives back makes it wider. */
+.deck-slide.slide-screen {
+  padding: 44px 92px 72px;
+}
+
+/* A 1:1 heading split: the screen-slide titles run long, and the 0.82fr
+   default would break them onto a second line and steal height from the
+   recording below. */
+.slide-screen .content-heading {
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 14px;
+}
+.slide-screen .content-heading h2 { font-size: 1.2em; }
+
+.screen-shot {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* calc leaves the caption its line; without it the image claims the full
+   height of the figure and pushes the caption into the slide padding. */
+.screen-shot img {
+  max-width: 100%;
+  max-height: calc(100% - 26px);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: 0 16px 38px rgba(var(--deep-rgb), 0.16);
+}
+
+.screen-shot figcaption {
+  color: var(--muted);
+  font: 700 0.24em/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- interlude ----------------------------------------------------- */
+
+/* Same dark treatment as title and chapter (data-state="chapter" supplies
+   the gradient), carrying just a word or a mark. */
+.deck-slide.slide-interlude {
+  display: grid;
+  place-items: center;
+  padding: 74px 100px 104px;
+  color: var(--white);
+}
+
+.interlude-word {
+  font-size: 2.4em;
+  letter-spacing: -0.055em;
+  color: var(--white);
+}
+
+.interlude-word span { color: var(--accent-light); }
+
+.ambient-glow {
+  left: 50%;
+  top: 50%;
+  width: 640px;
+  height: 640px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 121, 109, 0.24), transparent 62%);
+}
+
+/* Decorative mark, kept from the source deck as an example. */
+.sun {
+  position: relative;
+  z-index: 1;
+  width: 300px;
+  height: 300px;
+  filter: drop-shadow(0 0 42px rgba(255, 121, 109, 0.42));
+}
+
+.sun-disc { fill: var(--accent-light); }
+
+.sun-rays {
+  stroke: var(--accent-light);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* ---------- closing ------------------------------------------------------- */
+
+.deck-slide.slide-closing {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  align-items: center;
+  gap: 130px;
+  padding: 80px 104px;
+  color: var(--ink);
+  background: transparent;
+}
+
+.closing-copy h2 {
+  margin: 20px 0 38px;
+  color: var(--ink);
+  font-size: 2em;
+}
+
+.links {
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink);
+  font: 520 0.45em/1.2 var(--mono);
+}
+
+.links a { text-decoration: none; }
+
+.links a::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Three links read as the deck's accent -> blend -> deep progression. */
+.links li + li a::before { background: var(--deep-light); }
+.links li:nth-child(2) a::before { background: var(--blend); }
+
+/* .deck-slide p zeroes margin-top, so this needs the slide class to win. */
+.slide-closing .closing-note {
+  margin: 28px 0 0;
+  color: var(--muted);
+  font: 520 0.3em/1.4 var(--mono);
+}
+
+.qr { justify-self: center; text-align: center; }
+
+.qr-frame {
+  width: 246px;
+  height: 246px;
+  padding: 20px;
+  border-radius: 22px;
+  background: var(--white);
+  box-shadow: 0 30px 80px rgba(var(--deep-rgb), 0.18), 0 0 0 1px rgba(var(--deep-rgb), 0.08);
+  transition: transform 180ms ease;
+}
+
+/* Hover lifts the card a touch so it reads as something you can click. */
+.qr-frame:hover { transform: translateY(-2px); }
+
+.qr img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* The QR image is the closing slide's only link: clicking it opens the shared
+   doc in a new tab, while the page itself keeps its no-links look. */
+.qr-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.qr-link:focus-visible {
+  border-radius: 10px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.qr p {
+  margin: 19px 0 5px;
+  color: var(--muted);
+  font: 650 0.3em/1.2 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.qr > a {
+  color: var(--muted);
+  font: 500 0.32em/1.2 var(--mono);
+  text-decoration: none;
+}
+
+/* ---------- code ---------------------------------------------------------- */
+
+.deck-slide pre {
+  margin: 0.4em 0 0.6em;
+  padding: 0.9em 1.1em;
+  border: 1px solid rgba(var(--deep-rgb), 0.14);
+  border-radius: 12px;
+  background: #081923;
+  color: #eff4f6;
+  overflow-x: auto;
+}
+
+/* The heading ends, the code block takes the rest of the slide. */
+.slide-content pre { margin-top: 44px; }
+
+.deck-slide pre code,
+.deck-slide code { font-family: var(--mono); }
+
+.deck-slide pre code {
+  display: block;
+  font-size: 0.48em;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* Token colours for js/highlight.js output. */
+.tok-com { color: #7f98a7; font-style: italic; }
+.tok-str, .tok-add { color: #7fcfa0; }
+.tok-key, .tok-cmd, .tok-hunk { color: #d58bd2; font-weight: 650; }
+.tok-sub, .tok-attr { color: #79b8d1; }
+.tok-flag, .tok-num, .tok-lit { color: #ffad7e; }
+.tok-url, .tok-meta { color: #a9bdc8; }
+.tok-punc { color: #6d8795; }
+.tok-del { color: #ff796d; }
+
+/* ---------- fragments ----------------------------------------------------- */
+
+/* deck.js toggles .is-visible per fragment as you step through the slide. */
+.fragment { transform: translateY(8px); }
+.fragment.is-visible { transform: translateY(0); }
+
+/* 首字母高亮：凸显缩写的来源（如 H T M L → HTML）。 */
+.init {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* 同目录文件引用（讲义等）：做成一枚小标签，跟外链区分开 */
+.file-ref {
+  padding: 1px 7px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: rgba(var(--deep-rgb), 0.05);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.94em;
+}
+
+/* 内容页内嵌截图：高度受限、居中，和 .slide-screen 全幅版区分开。 */
+.shot-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 30px 0 0;
+}
+
+.shot-inline img {
+  max-width: 100%;
+  max-height: 268px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: 0 16px 38px rgba(var(--deep-rgb), 0.16);
+}
+
+.shot-inline figcaption {
+  color: var(--muted);
+  font: 700 0.24em/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* 左机制、右截图的双栏体：左边 mech 节点图，右边内嵌截图。 */
+.split-body {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 44px;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.split-body .shot-inline { margin-top: 0; }
+
+/* 双栏里的代码块同样不吃整页版的 44px 顶距，和右侧截图对齐。 */
+.split-body pre { margin-top: 0; }
+
+/* 双栏截图比整页内嵌版再收一点高度，给下方 takeaway 留出空间。 */
+.split-body .shot-inline img { max-height: 248px; }
+
+/* 个别页需要更高的示意图时，给 figure 加一个自己的修饰类放开高度，
+   例如 .my-fig img { max-height: 340px; }。 */
+
+.mech {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mech-node {
+  padding: 13px 18px;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 22px rgba(var(--deep-rgb), 0.07);
+}
+
+.mech-node span {
+  display: block;
+  color: var(--accent);
+  font: 700 0.3em/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mech-node strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 0.36em;
+  font-weight: 620;
+}
+
+.mech-node-alt { border-left-color: var(--deep); }
+.mech-node-alt span { color: var(--deep); }
+
+.mech-arrow {
+  color: var(--deep-light);
+  text-align: center;
+  font: 650 0.3em/1.2 var(--mono);
+}
+
+/* ---------- closing 暗色版 ------------------------------------------------ */
+
+/* 章节页右侧的太阳装饰（由原幕间页融合而来，取居中偏上的光学位置）。 */
+.chapter-sun {
+  position: absolute;
+  right: 130px;
+  top: 50%;
+  width: 210px;
+  height: 210px;
+  transform: translateY(-45%);
+}
+
+/* 结尾页与开场页同为深色渐变，首尾呼应；文字换浅色，QR 保持白底。 */
+.deck[data-slide-state="closing"] {
+  background: linear-gradient(115deg, #071721 8%, #173f57 62%, #583447 100%);
+}
+
+.deck[data-slide-state="closing"]::after {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.deck[data-slide-state="closing"] .deck-counter {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.deck[data-slide-state="closing"] .deck-progress::before {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.deck[data-slide-state="closing"] .deck-progress-fill {
+  background: linear-gradient(90deg, var(--accent-light), #d45b78 62%, #82a9bd);
+}
+
+.deck-slide.slide-closing {
+  color: var(--white);
+}
+
+.closing-copy h2 {
+  color: var(--white);
+}
+
+.links {
+  color: var(--white);
+}
+
+.slide-closing .closing-note {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.qr p,
+.qr > a {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- 彩蛋 -------------------------------------------------------- */
+
+/*
+ * 源码彩蛋的样式：按住 Shift 敲 E 弹出的那张卡片（逻辑在
+ * js/easter-egg.js，index.html 开头的注释里有提示）。
+ * 想改成自己的彩蛋就动那边的 CARD 字符串，这里的样式通用。
+ */
+.egg {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  /* 单列 minmax(0,1fr)：轨道宽度锁定在可用宽度，auto 轨道会被内容顶破 */
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  padding: 36px;
+}
+
+.egg[hidden] { display: none; }
+
+/*
+ * 摘掉 is-open 的同一帧就退出命中测试：Esc 之后滚轮、点击立刻还给幻灯片，
+ * 淡出只是视觉余韵。不然退场的 ~260ms 里（定时器被节流时更久）透明的遮罩
+ * 还盖着视口——deck.js 的滚轮监听挂在 .deck 上，事件落在遮罩上就到不了它。
+ */
+.egg:not(.is-open) { pointer-events: none; }
+
+/* 磨砂玻璃：底色比实心遮罩浅一点，景深交给 blur。
+   blur 压到 10px——全屏 backdrop-filter 的合成开销随半径涨，
+   Windows 高分屏上 14px 会掉帧，10px 观感几乎不变 */
+.egg-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 23, 33, 0.74);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  backdrop-filter: blur(10px) saturate(1.15);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.egg.is-open .egg-backdrop {
+  opacity: 1;
+  transition: opacity 240ms ease;
+}
+
+/*
+ * 进场一次到位（320ms 缓出），退场一闪而过（140ms）——
+ * 丝滑的关键是短而果断：总时长越长、嵌套运动越多，越显得拖泥带水。
+ * 两张状态各自声明 transition，浏览器取的是目标状态的时长。
+ */
+.egg-card {
+  position: relative;
+  box-sizing: border-box;
+  width: min(620px, 100%);
+  /* grid 项默认 min-width:auto，会被内容顶破指定宽度，这里锁死 */
+  min-width: 0;
+  max-height: 86vh;
+  overflow: auto;
+  padding: 42px 46px 34px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 20px;
+  background: linear-gradient(165deg, #143043, #0a1c28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 32px 90px rgba(2, 12, 20, 0.55);
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.75;
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
+  transition: opacity 140ms ease, transform 140ms ease;
+  /* 独立合成层：位移期间不用重绘投影和大圆角 */
+  will-change: transform, opacity;
+}
+
+.egg.is-open .egg-card {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 顶缘一道强调色发丝线：卡片从暗处亮起来的那一下 */
+.egg-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.75), transparent);
+}
+
+.egg-card:focus { outline: none; }
+
+/* 内容按行序浮现：步距收紧到 45ms，读起来是一阵波浪而不是六段动画；
+   退场统一快速收掉，不逐行等 */
+.egg-card > * {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.egg.is-open .egg-card > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 360ms ease,
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.egg.is-open .egg-card > :nth-child(1) { transition-delay: 60ms; }
+.egg.is-open .egg-card > :nth-child(2) { transition-delay: 105ms; }
+.egg.is-open .egg-card > :nth-child(3) { transition-delay: 150ms; }
+.egg.is-open .egg-card > :nth-child(4) { transition-delay: 195ms; }
+.egg.is-open .egg-card > :nth-child(5) { transition-delay: 240ms; }
+.egg.is-open .egg-card > :nth-child(6) { transition-delay: 285ms; }
+
+.egg-eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent-light);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.egg-title {
+  margin: 0 0 16px;
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.egg-lead {
+  max-width: 52ch;
+  margin: 0 0 22px;
+}
+
+.egg-code {
+  margin: 0 0 22px;
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: #071720;
+  color: #eff4f6;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.75;
+  overflow-x: auto;
+}
+
+/* 光标停在 WRITE 后面，像编辑器还开着 */
+.egg-code code::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.4em;
+  vertical-align: -0.16em;
+  background: #7fcfa0;
+  animation: egg-caret 1.1s linear infinite;
+}
+
+@keyframes egg-caret {
+  0%, 54% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+.egg-foot {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+.egg-foot kbd {
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.egg-sign {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  text-align: right;
+}
+
+/* 系统开了「减少动态效果」就别演了：内容直出，光标常亮 */
+@media (prefers-reduced-motion: reduce) {
+  .egg-backdrop,
+  .egg.is-open .egg-backdrop,
+  .egg-card,
+  .egg.is-open .egg-card,
+  .egg-card > *,
+  .egg.is-open .egg-card > * {
+    transition: none;
+  }
+
+  .egg-code code::after { animation: none; }
+}
+
+/* ---------- print ------------------------------------------------ */
+
+/*
+  屏幕上背景挂在舞台 .deck 上、跟随当前页的 data-slide-state 切换（内容页
+  多数没有 data-state，靠 JS 兜底成 "content"），幻灯片本身透明。打印时
+  全部页平铺成一个流，一个舞台只能有一种背景——所以这里把舞台关掉，按
+  每页自己的版式把同款背景复刻到 slide 上，内边框和左侧红条一并搬家。
+  浅色组用排除法（:not 深色三版式），这样 .slide-content、.slide-screen
+  以及未来新增的浅色版式都自动带上；deck.css 的 print 段只管一页一张布局。
+*/
+@media print {
+  .deck,
+  .deck[data-slide-state="title"],
+  .deck[data-slide-state="chapter"],
+  .deck[data-slide-state="content"],
+  .deck[data-slide-state="closing"] {
+    background: none;
+  }
+
+  .deck::before,
+  .deck::after {
+    content: none;
+  }
+
+  .deck-slide {
+    background: var(--white);
+  }
+
+  .deck-slide.slide-title,
+  .deck-slide.slide-chapter,
+  .deck-slide.slide-closing {
+    background: linear-gradient(115deg, #071721 8%, #173f57 62%, #583447 100%);
+  }
+
+  .deck-slide:not(.slide-title):not(.slide-chapter):not(.slide-closing) {
+    background:
+      radial-gradient(circle at 94% 5%, rgba(var(--accent-rgb), 0.06), transparent 30%),
+      radial-gradient(circle at 82% 95%, rgba(var(--deep-rgb), 0.06), transparent 34%),
+      var(--white);
+  }
+
+  /* 基础段里 .deck-slide::after 是 display:none，装饰框要显式开回来 */
+  .deck-slide:not(.slide-title):not(.slide-chapter):not(.slide-closing)::after,
+  .deck-slide.slide-title::after,
+  .deck-slide.slide-chapter::after,
+  .deck-slide.slide-closing::after {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 20px;
+    z-index: 2;
+    border: 1px solid rgba(var(--deep-rgb), 0.07);
+    pointer-events: none;
+  }
+
+  .deck-slide.slide-title::after,
+  .deck-slide.slide-chapter::after,
+  .deck-slide.slide-closing::after {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .deck-slide:not(.slide-title):not(.slide-chapter):not(.slide-closing)::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 18px;
+    z-index: 2;
+    background: linear-gradient(var(--accent), #c5445d 48%, var(--deep));
+  }
+
+  /* 不想让二维码进 PDF/打印稿（比如链接只面向现场观众）时，放开下面
+     两条注释：隐藏 .qr 并把结尾页收成单栏，避免右侧空出一列。
+     单文件导出去除二维码用 export_single.py --no-qr。 */
+  /* .slide-closing .qr { display: none; } */
+  /* .deck-slide.slide-closing { grid-template-columns: minmax(0, 1fr); gap: 0; } */
+
+  /* 打印渲染的字体度量与屏幕略有出入，长行宁可折行也不能被 pre 裁掉。
+     选择器带 .deck-slide 是为了盖过上面的 .deck-slide pre code { white-space: pre }。 */
+  .deck-slide pre code {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
+  /*
+    封面副标题是渐变文字（transparent + background-clip:text）。打印的
+    渲染路径会把 clip-text 的背景丢掉，文字保持 transparent 整行消失
+    （文本层还会被拆成两段）。回退成渐变起色的实色。
+  */
+  .title-copy h1 span {
+    color: var(--accent-light);
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+  }
+}

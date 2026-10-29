@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Favicon: deck accent red rounded square with a play mark — "double-click
+       and present". Swap the colour with --accent in css/custom.css. -->
+  <rect width="64" height="64" rx="14" fill="#f03c2e"/>
+  <path d="M25 19l22 13-22 13z" fill="#ffffff"/>
+</svg>

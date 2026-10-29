@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246 246" role="img" aria-label="二维码占位图">
+  <!-- Placeholder for the closing slide's QR slot (.qr). Replace with the real
+       QR image pointing at your handout / repo; the image itself is clickable. -->
+  <rect width="246" height="246" fill="#ffffff"/>
+  <defs>
+    <pattern id="modules" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="11" height="11" fill="#173f57"/>
+      <rect x="13" y="13" width="9" height="9" fill="#173f57"/>
+    </pattern>
+  </defs>
+  <rect x="14" y="14" width="218" height="218" fill="url(#modules)" opacity="0.9"/>
+
+  <!-- finder patterns -->
+  <g fill="#ffffff">
+    <rect x="6" y="6" width="66" height="66"/>
+    <rect x="174" y="6" width="66" height="66"/>
+    <rect x="6" y="174" width="66" height="66"/>
+    <rect x="83" y="83" width="80" height="80"/>
+  </g>
+  <g fill="none" stroke="#173f57" stroke-width="12">
+    <rect x="14" y="14" width="50" height="50"/>
+    <rect x="182" y="14" width="50" height="50"/>
+    <rect x="14" y="182" width="50" height="50"/>
+  </g>
+  <g fill="#173f57">
+    <rect x="30" y="30" width="18" height="18"/>
+    <rect x="198" y="30" width="18" height="18"/>
+    <rect x="30" y="198" width="18" height="18"/>
+  </g>
+
+  <text x="123" y="127" text-anchor="middle" fill="#f03c2e"
+        font-family="Cascadia Mono, Consolas, monospace" font-size="26" font-weight="700" letter-spacing="2">QR</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 44" role="img" aria-label="Placeholder wordmark">
+  <!-- Placeholder wordmark for the dark title slide. Replace with the real
+       light-on-dark logo; height is set by .logo-a in custom.css. -->
+  <g fill="#ffffff" font-family="Cascadia Mono, SFMono-Regular, Consolas, monospace" font-size="22" font-weight="650" letter-spacing="3">
+    <text x="30" y="30">LOGO&#160;A</text>
+  </g>
+  <circle cx="16" cy="22" r="9" fill="#f03c2e"/>
+</svg>
